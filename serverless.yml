@@ -20,6 +20,12 @@ provider:
     - Effect: Allow
       Action: execute-api:Invoke
       Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:*/*/GET/restaurants
+    - Effect: Allow
+      Action: kinesis:PutRecord
+      Resource: 
+        Fn::GetAtt:
+          - orderEventsStream
+          - Arn
 
 functions:
   get-index:
@@ -35,8 +41,9 @@ functions:
           - - "https://"
             - Ref: ApiGatewayRestApi
             - ".execute-api.${opt:region}.amazonaws.com/${opt:stage}/restaurants"
-      cognito_user_pool_id: eu-west-1_PblAMklAH
-      cognito_client_id: 6686ukscje8smbfuvdpnepp5o9
+      cognito_user_pool_id: ${ssm:/${self:service}/${opt:stage}/cognito_user_pool_id}
+      cognito_client_id: ${ssm:/${self:service}/${opt:stage}/cognito_web_client_id}
+
   get-restaurants:
     handler: functions/get-restaurants.handler
     events:
@@ -45,7 +52,7 @@ functions:
           method: get
           authorizer: aws_iam
     environment:
-      restaurants_table: restaurants-yancui
+      restaurants_table: ${ssm:/${self:service}/${opt:stage}/table_name}
 
   search-restaurants:
     handler: functions/search-restaurants.handler
@@ -54,16 +61,27 @@ functions:
           path: /restaurants/search
           method: post
           authorizer:
-            arn: arn:aws:cognito-idp:#{AWS::Region}:#{AWS::AccountId}:userpool/eu-west-1_PblAMklAH
+            arn: arn:aws:cognito-idp:#{AWS::Region}:#{AWS::AccountId}:userpool/${ssm:/${self:service}/${opt:stage}/cognito_user_pool_id}
     environment:
-      restaurants_table: restaurants-yancui
+      restaurants_table: ${ssm:/${self:service}/${opt:stage}/table_name}
+
+  place-order:
+    handler: functions/place-order.handler
+    events:
+      - http:
+          path: /orders
+          method: post
+          authorizer:
+            arn: arn:aws:cognito-idp:#{AWS::Region}:#{AWS::AccountId}:userpool/${ssm:/${self:service}/${opt:stage}/cognito_user_pool_id}
+    environment:
+      order_events_stream: ${ssm:/${self:service}/${opt:stage}/stream_name}
 
 resources:
   Resources:
     restaurantsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: restaurants-yancui
+        TableName: ${ssm:/${self:service}/${opt:stage}/table_name}
         AttributeDefinitions:
           - AttributeName: name
             AttributeType: S
@@ -73,3 +91,8 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+    orderEventsStream:
+      Type: AWS::Kinesis::Stream
+      Properties: 
+        Name: ${ssm:/${self:service}/${opt:stage}/stream_name}
+        ShardCount: 1

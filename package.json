@@ -12,7 +12,6 @@
   "license": "ISC",
   "devDependencies": {
     "chai": "^4.2.0",
-    "chance": "^1.1.6",
     "cheerio": "^1.0.0-rc.3",
     "mocha": "^8.0.1",
     "serverless": "^1.73.1",
@@ -23,6 +22,7 @@
     "aws4": "^1.10.0",
     "awscred": "^1.5.0",
     "bluebird": "^3.7.2",
+    "chance": "^1.1.6",
     "co": "^4.6.0",
     "fs": "0.0.1-security",
     "lodash": "^4.17.15",
