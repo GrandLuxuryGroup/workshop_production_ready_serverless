@@ -1,0 +1,74 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "get-restaurants",
+            "program":"${workspaceFolder}/node_modules/.bin/sls",
+            "args":[
+                "invoke",
+                "local",
+                "-f",
+                "get-restaurants",
+                "-r",
+                "eu-west-1",
+                "-s",
+                "dev",
+                "-d",
+                "{}"
+            ],
+            "env": {
+                "restaurants_table":"restaurants-yancui"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "search-restaurants",
+            "program": "${workspaceFolder}/node_modules/.bin/sls",
+            "args": [
+                "invoke",
+                "local",
+                "-f",
+                "search-restaurants",
+                "-r",
+                "eu-west-1",
+                "-s",
+                "dev",
+                "-p",
+                "examples/search-restaurants.json"
+            ],
+            "env": {
+                "restaurants_table": "restaurants-yancui"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "get-index",
+            "program": "${workspaceFolder}/node_modules/.bin/sls",
+            "args": [
+                "invoke",
+                "local",
+                "-f",
+                "get-index",
+                "-r",
+                "eu-west-1",
+                "-s",
+                "dev",
+                "-d",
+                "{}"
+            ],
+            "env": {
+                "restaurants_api": "https://zha96y284l.execute-api.eu-west-1.amazonaws.com/dev/restaurants",
+                "cognito_user_pool_id": "eu-west-1_PblAMklAH",
+                "cognito_client_id": "6686ukscje8smbfuvdpnepp5o9",
+                
+            }
+        }
+    ]
+}
