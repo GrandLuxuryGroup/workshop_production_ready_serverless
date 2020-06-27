@@ -7,6 +7,7 @@ const awscred = require("awscred");
 const { promisify } = require("util");
 
 const restaurantsApiRoot = process.env.restaurants_api;
+const ordersApiRoot = process.env.orders_api;
 const days = [
   "Sunday",
   "Monday",
@@ -73,6 +74,7 @@ module.exports.handler = async (event, context) => {
     dayOfWeek,
     restaurants,
     searchUrl: `${restaurantsApiRoot}/search`,
+    placeOrderUrl: `${ordersApiRoot}`,
   };
   const html = Mustache.render(template, view);
   const response = {

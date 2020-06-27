@@ -26,6 +26,10 @@ provider:
         Fn::GetAtt:
           - orderEventsStream
           - Arn
+    - Effect: Allow
+      Action: sns:Publish
+      Resource: 
+        Ref: restaurantNotificationTopic
 
 functions:
   get-index:
@@ -41,6 +45,12 @@ functions:
           - - "https://"
             - Ref: ApiGatewayRestApi
             - ".execute-api.${opt:region}.amazonaws.com/${opt:stage}/restaurants"
+      orders_api: 
+        Fn::Join:
+          - ''
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${opt:region}.amazonaws.com/${opt:stage}/orders"
       cognito_user_pool_id: ${ssm:/${self:service}/${opt:stage}/cognito_user_pool_id}
       cognito_client_id: ${ssm:/${self:service}/${opt:stage}/cognito_web_client_id}
 
@@ -76,6 +86,20 @@ functions:
     environment:
       order_events_stream: ${ssm:/${self:service}/${opt:stage}/stream_name}
 
+  notify-restaurant:
+    handler: functions/notify-restaurant.handler
+    events:
+      - stream:
+          type: kinesis
+          arn: 
+            Fn::GetAtt:
+              - orderEventsStream
+              - Arn
+    environment:
+      order_events_stream: ${ssm:/${self:service}/${opt:stage}/stream_name}
+      restaurant_notification_topic: 
+        Ref: restaurantNotificationTopic
+
 resources:
   Resources:
     restaurantsTable:
@@ -96,3 +120,8 @@ resources:
       Properties: 
         Name: ${ssm:/${self:service}/${opt:stage}/stream_name}
         ShardCount: 1
+    restaurantNotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties: 
+        DisplayName: ${ssm:/${self:service}/${opt:stage}/restaurant_topic_name}
+        TopicName: ${ssm:/${self:service}/${opt:stage}/restaurant_topic_name}
